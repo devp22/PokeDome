@@ -1,0 +1,12 @@
+# use maven as a builder image to separate the compile step from our deployment image
+FROM maven:3.9.6-eclipse-temurin-21 AS builder
+WORKDIR pokedome
+COPY ./ ./
+RUN mvn clean install
+
+FROM openjdk:21 AS backend
+WORKDIR pokedome
+# copy the jar from the builder image to the final image
+COPY --from=builder /pokedome/target/pokedome-0.0.1-SNAPSHOT.jar /pokedome/pokedome-0.0.1-SNAPSHOT.jar
+EXPOSE 8080
+CMD ["java", "-jar", "/pokedome/pokedome-0.0.1-SNAPSHOT.jar"]
